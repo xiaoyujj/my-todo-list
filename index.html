@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的待办清单</title>
+    <style>
+        /* 页面整体样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 主容器 - 最大宽度 500px，居中显示 */
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 500px;
+            padding: 40px 30px;
+        }
+
+        /* 页面标题 */
+        h1 {
+            color: #2d3748;
+            font-size: 32px;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        /* 输入区域 */
+        .input-section {
+            display: grid;
+            grid-template-columns: 1fr auto auto auto;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        /* 输入框样式 */
+        input[type="text"] {
+            padding: 14px 18px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            outline: none;
+            min-width: 0;
+        }
+
+        input[type="text"]:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* 分类选择下拉框样式 */
+        .category-select {
+            padding: 14px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .category-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* 优先级选择下拉框样式 */
+        .priority-select {
+            padding: 14px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .priority-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* 添加按钮样式 */
+        .add-btn {
+            padding: 14px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .add-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .add-btn:active {
+            transform: translateY(0);
+        }
+
+        /* 筛选按钮组 */
+        .filter-section {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        /* 筛选按钮样式 */
+        .filter-btn {
+            padding: 8px 16px;
+            background: #f7fafc;
+            color: #4a5568;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover {
+            background: #edf2f7;
+            border-color: #cbd5e0;
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        /* 任务列表容器 */
+        .todo-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* 单个任务项样式 */
+        .todo-item {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .todo-item:hover {
+            background: #edf2f7;
+            border-color: #e2e8f0;
+        }
+
+        /* 任务内容文字 */
+        .todo-text {
+            flex: 1;
+            font-size: 16px;
+            color: #2d3748;
+            line-height: 1.5;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* 分类标签样式 */
+        .category-tag {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .category-tag.work {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .category-tag.life {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .category-tag.study {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        /* 优先级标识 */
+        .priority-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+            flex-shrink: 0;
+        }
+
+        .priority-indicator.high {
+            background: #f56565;
+            box-shadow: 0 0 8px rgba(245, 101, 101, 0.5);
+        }
+
+        .priority-indicator.medium {
+            background: #ecc94b;
+            box-shadow: 0 0 8px rgba(236, 201, 75, 0.5);
+        }
+
+        .priority-indicator.low {
+            background: #a0aec0;
+        }
+
+        /* 已完成任务的样式 */
+        .todo-item.completed .todo-text {
+            text-decoration: line-through; /* 删除线 */
+            color: #a0aec0; /* 灰色 */
+        }
+
+        /* 按钮组容器 */
+        .todo-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* 完成按钮样式 */
+        .complete-btn {
+            padding: 8px 16px;
+            background: #48bb78;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .complete-btn:hover {
+            background: #38a169;
+            transform: scale(1.05);
+        }
+
+        /* 删除按钮样式 */
+        .delete-btn {
+            padding: 8px 16px;
+            background: #f56565;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .delete-btn:hover {
+            background: #e53e3e;
+            transform: scale(1.05);
+        }
+
+        /* 清空已完成按钮样式 */
+        .clear-completed-btn {
+            width: 100%;
+            padding: 12px;
+            margin-top: 20px;
+            background: #fc8181;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .clear-completed-btn:hover {
+            background: #f56565;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(245, 101, 101, 0.3);
+        }
+
+        /* 响应式设计 - 手机屏幕 */
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 26px;
+            }
+
+            .input-section {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            input[type="text"] {
+                width: 100%;
+            }
+
+            .category-select,
+            .priority-select,
+            .add-btn {
+                width: 100%;
+                font-size: 15px;
+            }
+
+            .todo-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .todo-text {
+                flex-wrap: wrap;
+            }
+
+            .todo-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 主容器 -->
+    <div class="container">
+        <!-- 页面标题 -->
+        <h1>我的待办清单</h1>
+
+        <!-- 输入区域 -->
+        <div class="input-section">
+            <input type="text" placeholder="添加新任务...">
+            <select class="category-select">
+                <option value="work">工作</option>
+                <option value="life">生活</option>
+                <option value="study">学习</option>
+            </select>
+            <select class="priority-select">
+                <option value="low">低优先级</option>
+                <option value="medium" selected>中优先级</option>
+                <option value="high">高优先级</option>
+            </select>
+            <button class="add-btn">添加</button>
+        </div>
+
+        <!-- 筛选按钮组 -->
+        <div class="filter-section">
+            <button class="filter-btn active" data-filter="all">全部</button>
+            <button class="filter-btn" data-filter="work">工作</button>
+            <button class="filter-btn" data-filter="life">生活</button>
+            <button class="filter-btn" data-filter="study">学习</button>
+        </div>
+
+        <!-- 任务列表区域 -->
+        <div class="todo-list">
+            <!-- 任务将从 localStorage 动态加载 -->
+        </div>
+
+        <!-- 清空已完成按钮 -->
+        <button class="clear-completed-btn" style="display: none;">清空已完成任务</button>
+    </div>
+
+    <!-- JavaScript 代码区域 -->
+    <script>
+        // 1. 获取页面元素的引用
+        const todoInput = document.querySelector('input[type="text"]'); // 输入框
+        const addButton = document.querySelector('.add-btn'); // 添加按钮
+        const todoList = document.querySelector('.todo-list'); // 任务列表容器
+        const clearCompletedBtn = document.querySelector('.clear-completed-btn'); // 清空已完成按钮
+        const categorySelect = document.querySelector('.category-select'); // 分类选择器
+        const prioritySelect = document.querySelector('.priority-select'); // 优先级选择器
+        const filterBtns = document.querySelectorAll('.filter-btn'); // 筛选按钮
+        let currentFilter = 'all'; // 当前筛选的分类
+
+        // 分类名称映射
+        const categoryNames = {
+            work: '工作',
+            life: '生活',
+            study: '学习'
+        };
+
+        // 优先级数值映射（用于排序）
+        const priorityValues = {
+            high: 3,
+            medium: 2,
+            low: 1
+        };
+
+        // 2. 保存任务到 localStorage
+        function saveTodos() {
+            // 获取所有任务元素
+            const todoItems = document.querySelectorAll('.todo-item');
+            
+            // 创建一个数组来存储任务数据
+            const todos = [];
+            
+            // 遍历每个任务，提取数据
+            todoItems.forEach(function(item) {
+                const todoData = {
+                    text: item.querySelector('.todo-text').textContent.trim(), // 任务内容
+                    completed: item.classList.contains('completed'), // 是否完成
+                    category: item.dataset.category, // 任务分类
+                    priority: item.dataset.priority || 'medium' // 优先级
+                };
+                todos.push(todoData);
+            });
+            
+            // 将任务数组转换为 JSON 字符串，保存到 localStorage
+            localStorage.setItem('todoList', JSON.stringify(todos));
+        }
+
+        // 3. 从 localStorage 读取任务
+        function loadTodos() {
+            // 从 localStorage 获取保存的数据
+            const savedTodos = localStorage.getItem('todoList');
+            
+            // 如果没有保存的数据，直接返回
+            if (!savedTodos) {
+                return;
+            }
+            
+            // 将 JSON 字符串转换回数组
+            const todos = JSON.parse(savedTodos);
+            
+            // 遍历数组，重新创建任务元素
+            todos.forEach(function(todoData) {
+                // 创建任务项元素
+                const todoItem = document.createElement('div');
+                todoItem.className = 'todo-item';
+                todoItem.dataset.category = todoData.category || 'work'; // 保存分类信息
+                todoItem.dataset.priority = todoData.priority || 'medium'; // 保存优先级信息
+                
+                // 如果任务是已完成状态，添加 completed 类
+                if (todoData.completed) {
+                    todoItem.classList.add('completed');
+                }
+                
+                // 获取分类和优先级
+                const category = todoData.category || 'work';
+                const categoryName = categoryNames[category];
+                const priority = todoData.priority || 'medium';
+                
+                // 设置任务项的 HTML 内容
+                todoItem.innerHTML = `
+                    <span class="todo-text">
+                        <span class="priority-indicator ${priority}"></span>
+                        <span class="category-tag ${category}">${categoryName}</span>
+                        ${todoData.text}
+                    </span>
+                    <div class="todo-actions">
+                        <button class="complete-btn">${todoData.completed ? '取消' : '完成'}</button>
+                        <button class="delete-btn">删除</button>
+                    </div>
+                `;
+                
+                // 添加到任务列表
+                todoList.appendChild(todoItem);
+            });
+            
+            // 加载后按优先级排序
+            sortTodosByPriority();
+        }
+
+        // 4. 按优先级排序任务
+        function sortTodosByPriority() {
+            // 获取所有任务
+            const todoItems = Array.from(document.querySelectorAll('.todo-item'));
+            
+            // 按优先级和完成状态排序
+            todoItems.sort(function(a, b) {
+                // 先按完成状态排序（未完成的在前）
+                const aCompleted = a.classList.contains('completed') ? 1 : 0;
+                const bCompleted = b.classList.contains('completed') ? 1 : 0;
+                
+                if (aCompleted !== bCompleted) {
+                    return aCompleted - bCompleted;
+                }
+                
+                // 再按优先级排序（高优先级在前）
+                const aPriority = priorityValues[a.dataset.priority] || 2;
+                const bPriority = priorityValues[b.dataset.priority] || 2;
+                
+                return bPriority - aPriority;
+            });
+            
+            // 重新添加到列表
+            todoItems.forEach(function(item) {
+                todoList.appendChild(item);
+            });
+        }
+
+        // 5. 更新清空按钮的显示状态
+        function updateClearButton() {
+            // 查找所有已完成的任务
+            const completedTodos = document.querySelectorAll('.todo-item.completed');
+            
+            // 如果有已完成的任务，显示清空按钮；否则隐藏
+            if (completedTodos.length > 0) {
+                clearCompletedBtn.style.display = 'block';
+            } else {
+                clearCompletedBtn.style.display = 'none';
+            }
+        }
+
+        // 6. 创建添加任务的函数
+        function addTodo() {
+            // 获取输入框的内容，并去除首尾空格
+            const todoText = todoInput.value.trim();
+
+            // 如果输入框为空，不添加任务，直接返回
+            if (todoText === '') {
+                return;
+            }
+
+            // 获取选中的分类和优先级
+            const category = categorySelect.value;
+            const categoryName = categoryNames[category];
+            const priority = prioritySelect.value;
+
+            // 创建新的任务项元素
+            const todoItem = document.createElement('div');
+            todoItem.className = 'todo-item'; // 添加样式类名
+            todoItem.dataset.category = category; // 保存分类信息
+            todoItem.dataset.priority = priority; // 保存优先级信息
+
+            // 设置任务项的 HTML 内容（包含优先级、分类标签、任务文字和按钮）
+            todoItem.innerHTML = `
+                <span class="todo-text">
+                    <span class="priority-indicator ${priority}"></span>
+                    <span class="category-tag ${category}">${categoryName}</span>
+                    ${todoText}
+                </span>
+                <div class="todo-actions">
+                    <button class="complete-btn">完成</button>
+                    <button class="delete-btn">删除</button>
+                </div>
+            `;
+
+            // 把新任务添加到任务列表
+            todoList.appendChild(todoItem);
+            
+            // 按优先级排序
+            sortTodosByPriority();
+
+            // 清空输入框，准备下一次输入
+            todoInput.value = '';
+            
+            // 应用当前筛选器（如果当前有筛选，检查新任务是否应该显示）
+            applyFilter();
+            
+            // 更新清空按钮的显示状态
+            updateClearButton();
+            
+            // 保存任务到 localStorage
+            saveTodos();
+        }
+
+        // 7. 给添加按钮绑定点击事件
+        addButton.addEventListener('click', addTodo);
+
+        // 8. 给输入框绑定回车键事件（按回车也能添加任务）
+        todoInput.addEventListener('keypress', function(event) {
+            // 如果按下的是回车键（键码为 13 或 key 为 'Enter'）
+            if (event.key === 'Enter') {
+                addTodo(); // 调用添加任务函数
+            }
+        });
+
+        // 9. 实现删除任务和完成任务功能（使用事件委托）
+        // 在任务列表容器上监听点击事件，而不是在每个按钮上
+        todoList.addEventListener('click', function(event) {
+            // 检查被点击的元素是否是删除按钮
+            if (event.target.classList.contains('delete-btn')) {
+                // 找到删除按钮所在的任务项（删除按钮的爷爷元素）
+                const todoItem = event.target.closest('.todo-item');
+                
+                // 从列表中移除这个任务项
+                todoItem.remove();
+                
+                // 更新清空按钮的显示状态
+                updateClearButton();
+                
+                // 保存任务到 localStorage
+                saveTodos();
+            }
+            
+            // 检查被点击的元素是否是完成按钮
+            if (event.target.classList.contains('complete-btn')) {
+                // 找到完成按钮所在的任务项
+                const todoItem = event.target.closest('.todo-item');
+                
+                // 切换任务的完成状态（添加或移除 'completed' 类）
+                todoItem.classList.toggle('completed');
+                
+                // 根据当前状态切换按钮文字
+                if (todoItem.classList.contains('completed')) {
+                    // 如果任务已完成，按钮显示"取消"
+                    event.target.textContent = '取消';
+                } else {
+                    // 如果任务未完成，按钮显示"完成"
+                    event.target.textContent = '完成';
+                }
+                
+                // 按优先级重新排序（完成的任务会自动移到底部）
+                sortTodosByPriority();
+                
+                // 更新清空按钮的显示状态
+                updateClearButton();
+                
+                // 保存任务到 localStorage
+                saveTodos();
+            }
+        });
+
+        // 10. 清空所有已完成任务的功能
+        clearCompletedBtn.addEventListener('click', function() {
+            // 找到所有已完成的任务
+            const completedTodos = document.querySelectorAll('.todo-item.completed');
+            
+            // 遍历并删除每个已完成的任务
+            completedTodos.forEach(function(todoItem) {
+                todoItem.remove();
+            });
+            
+            // 删除后更新清空按钮的显示状态（会自动隐藏）
+            updateClearButton();
+            
+            // 保存任务到 localStorage
+            saveTodos();
+        });
+
+        // 11. 筛选功能
+        function applyFilter() {
+            const todoItems = document.querySelectorAll('.todo-item');
+            
+            todoItems.forEach(function(item) {
+                const itemCategory = item.dataset.category;
+                
+                // 如果是"全部"或者分类匹配，显示任务；否则隐藏
+                if (currentFilter === 'all' || currentFilter === itemCategory) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+            
+            updateClearButton();
+        }
+
+        // 12. 给筛选按钮绑定点击事件
+        filterBtns.forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                // 移除所有按钮的 active 类
+                filterBtns.forEach(function(b) {
+                    b.classList.remove('active');
+                });
+                
+                // 给当前按钮添加 active 类
+                this.classList.add('active');
+                
+                // 更新当前筛选器
+                currentFilter = this.dataset.filter;
+                
+                // 应用筛选
+                applyFilter();
+            });
+        });
+
+        // 13. 页面加载时的初始化
+        loadTodos(); // 从 localStorage 读取之前保存的任务
+        updateClearButton(); // 检查是否需要显示清空按钮
+    </script>
+</body>
+</html>
