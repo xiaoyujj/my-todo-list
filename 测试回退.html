@@ -425,8 +425,20 @@
             
             // 遍历每个任务，提取数据
             todoItems.forEach(function(item) {
+                // 获取 .todo-text 的所有子节点文本，排除标签元素
+                const todoTextElement = item.querySelector('.todo-text');
+                let taskText = '';
+                
+                // 遍历所有子节点，只获取纯文本节点的内容
+                todoTextElement.childNodes.forEach(function(node) {
+                    // 如果是文本节点（nodeType === 3）且不是标签元素，就收集它的内容
+                    if (node.nodeType === 3) {
+                        taskText += node.textContent;
+                    }
+                });
+                
                 const todoData = {
-                    text: item.querySelector('.todo-text').textContent.trim(), // 任务内容
+                    text: taskText.trim(), // 只保存纯任务内容，不包含分类和优先级标签
                     completed: item.classList.contains('completed'), // 是否完成
                     category: item.dataset.category, // 任务分类
                     priority: item.dataset.priority || 'medium' // 优先级
